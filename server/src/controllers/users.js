@@ -1,4 +1,5 @@
 const Users = require('../models/User');
+const Videos = require('../models/Video');
 const userController = {};
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const createErrors = require('http-errors');
@@ -27,6 +28,9 @@ userController.update = catchAsyncErrors(async (req, res, next) => {
 
 userController.getUser = catchAsyncErrors(async (req, res, next) => {
   const user = await Users.findById(req.params.id);
+
+  if (!user) return next(createErrors(404, 'User not found'));
+
   user.password = undefined;
   res.status(200).json({
     success: true,
@@ -78,8 +82,28 @@ userController.unsubscribe = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-userController.like = catchAsyncErrors(async (req, res, next) => {});
+userController.like = catchAsyncErrors(async (req, res, next) => {
+  const id = req.user.id;
+  const videoId = req.params.videoId;
 
-userController.dislike = catchAsyncErrors(async (req, res, next) => {});
+  await Videos.findByIdAndUpdate(videoId, {
+    $addToSet: { likes: id },
+    $pull: { dislikes: id },
+  });
+
+  res.status(200).json({ message: 'like success', success: true });
+});
+
+userController.dislike = catchAsyncErrors(async (req, res, next) => {
+  const id = req.user.id;
+  const videoId = req.params.videoId;
+
+  await Videos.findByIdAndUpdate(videoId, {
+    $addToSet: { dislikes: id },
+    $pull: { likes: id },
+  });
+
+  res.status(200).json({ message: 'dislike success', success: true });
+});
 
 module.exports = userController;

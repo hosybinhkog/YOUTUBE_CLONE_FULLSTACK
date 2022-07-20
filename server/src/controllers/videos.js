@@ -82,13 +82,40 @@ videoController.sub = catchAsyncErrors(async (req, res, next) => {
   const user = await Users.findById(req.user.id);
   const subscribedChannels = user.subscribedUsers;
 
-  const list = Promise.all(
+  const list = await Promise.all(
     subscribedChannels.map((chanelId) => {
       return Videos.find({ userId: chanelId });
     })
   );
 
-  res.status(200).json({ success: true, message: 'sub', list });
+  res.status(200).json({
+    success: true,
+    message: 'sub',
+    list: list.flat().sort((a, b) => b.createAt - a.createAt),
+  });
+});
+
+videoController.tags = catchAsyncErrors(async (req, res, next) => {
+  const tags = req.query.tags.split(',');
+  const videos = await Videos.find({ tags: { $in: tags } }).limit(20);
+
+  res.status(200).json({
+    success: true,
+    message: 'get by tags successfully',
+    videos,
+  });
+});
+
+videoController.search = catchAsyncErrors(async (req, res, next) => {
+  const search = req.query.q;
+
+  const videos = await Videos.find({ title: { $regex: search, $options: 'i' } }).limit(40);
+
+  res.status(200).json({
+    message: 'search by title successfully',
+    videos,
+    success: true,
+  });
 });
 
 module.exports = videoController;

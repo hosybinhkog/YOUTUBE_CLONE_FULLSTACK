@@ -11,5 +11,7 @@ videosRoute.put('/view/:id', verifyToken, videoController.view);
 videosRoute.get('/trend', videoController.trend);
 videosRoute.get('/random', videoController.random);
 videosRoute.get('/sub', verifyToken, videoController.sub);
+videosRoute.get('/tags', videoController.tags);
+videosRoute.get('/search', videoController.search);
 
 module.exports = videosRoute;
