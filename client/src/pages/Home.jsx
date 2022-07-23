@@ -1,6 +1,7 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Card } from '../components';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { Card } from "../components";
+import axios from "axios";
 
 const ContainerGrid = styled.div`
   width: 100%;
@@ -9,29 +10,23 @@ const ContainerGrid = styled.div`
   grid-template-columns: repeat(4, 1fr);
 `;
 
-const Home = () => {
+const Home = ({ type }) => {
+  const [videos, setVideos] = useState([]);
+
+  console.log(videos);
+
+  React.useEffect(() => {
+    const fetchVideos = async () => {
+      const res = await axios.get(`/videos/${type}`);
+      setVideos(res.data.videos);
+    };
+
+    fetchVideos();
+  }, [type]);
+
   return (
     <ContainerGrid>
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
-      <Card />
+      {videos && videos.map((video) => <Card key={video._id} video={video} />)}
     </ContainerGrid>
   );
 };

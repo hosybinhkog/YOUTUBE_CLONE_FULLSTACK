@@ -1,5 +1,8 @@
-import React from 'react';
-import styled from 'styled-components';
+import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import styled from "styled-components";
+import { loginFailure, loginRequest, loginSuccess } from "../redux/userSlice";
 
 const Container = styled.div`
   display: flex;
@@ -64,19 +67,57 @@ const Link = styled.span`
 `;
 
 const SignIn = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const dispatch = useDispatch();
+
+  const handleSubmitLogin = async (e) => {
+    e.preventDefault();
+    dispatch(loginRequest());
+    try {
+      const { data } = await axios.post("/auth/signin", { email, password });
+      dispatch(loginSuccess(data));
+    } catch (error) {
+      dispatch(loginFailure(error.response.data.message));
+    }
+  };
+
+  const handleSubmitRegister = async (e) => {
+    e.preventDefault();
+    try {
+    } catch (error) {}
+  };
+
   return (
     <Container>
       <Wrapper>
         <Title>Sign in</Title>
         <SubTitle>to continue to CloneYoutube</SubTitle>
-        <Input placeholder="username" />
-        <Input type="password" placeholder="password" />
-        <Button>Sign in</Button>
+        <Input
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="email"
+          type="email"
+        />
+        <Input
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="password"
+        />
+        <Button onClick={handleSubmitLogin}>Sign in</Button>
         <Title>or</Title>
-        <Input placeholder="username" />
-        <Input placeholder="email" />
-        <Input type="password" placeholder="password" />
-        <Button>Sign up</Button>
+        <Input
+          placeholder="username"
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Input placeholder="email" onChange={(e) => setEmail(e.target.value)} />
+        <Input
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="password"
+        />
+        <Button onSubmit={handleSubmitRegister}>Sign up</Button>
       </Wrapper>
       <More>
         English(USA)
