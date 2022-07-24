@@ -1,8 +1,8 @@
-const Users = require('../models/User');
-const bcrypt = require('bcryptjs');
-const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const Users = require("../models/User");
+const bcrypt = require("bcryptjs");
+const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const authController = {};
-const jsonwebtoken = require('jsonwebtoken');
+const jsonwebtoken = require("jsonwebtoken");
 
 authController.signup = catchAsyncErrors(async (req, res) => {
   const salt = await bcrypt.genSaltSync(10);
@@ -14,7 +14,7 @@ authController.signup = catchAsyncErrors(async (req, res) => {
   res.status(200).json({
     newUser,
     success: true,
-    message: 'create user successfully',
+    message: "create user successfully",
   });
 });
 
@@ -25,16 +25,19 @@ authController.signin = catchAsyncErrors(async (req, res, next) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: 'Invalid username or password',
+      message: "Invalid username or password",
     });
   }
 
-  const isMatchPassword = await bcrypt.compare(req.body.password, user.password);
+  const isMatchPassword = await bcrypt.compare(
+    req.body.password,
+    user.password
+  );
 
   if (!isMatchPassword) {
     return res.status(404).json({
       success: false,
-      message: 'Invalid username or password',
+      message: "Invalid username or password",
     });
   }
 
@@ -45,15 +48,53 @@ authController.signin = catchAsyncErrors(async (req, res, next) => {
   });
 
   res
-    .cookie('access_token', token, {
+    .cookie("access_token", token, {
       httpOnly: true,
     })
     .status(200)
     .json({
-      message: 'Login successful',
+      message: "Login successful",
       success: true,
       user,
     });
+});
+
+authController.signinWithGoogle = catchAsyncErrors(async (req, res, next) => {
+  const user = await Users.findOne({ email: req.body.email });
+  if (user) {
+    user.password = undefined;
+
+    const token = await jsonwebtoken.sign(
+      { id: user._id },
+      process.env.SECRET_KEY,
+      {
+        expiresIn: process.env.EXPIRES_IN_SECONDS,
+      }
+    );
+
+    res.cookie("access_token", token, { httpOnly: true }).status(200).json({
+      message: "Login success",
+      success: true,
+      user,
+    });
+  } else {
+    const newUser = await new Users({ ...req.body, fromGoogle: true });
+    await newUser.save();
+
+    const token = await jsonwebtoken.sign(
+      { id: newUser._id },
+      process.env.SECRET_KEY,
+      {
+        expiresIn: process.env.EXPIRES_IN_SECONDS,
+      }
+    );
+
+    res.cookie("access_token", token, { httpOnly: true }).status(200).json({
+      message: "Login success",
+      success: true,
+      user: newUser,
+    });
+  }
 });
 
 module.exports = authController;

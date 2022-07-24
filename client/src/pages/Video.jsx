@@ -1,11 +1,14 @@
-import React from 'react';
-import styled from 'styled-components';
-import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
-import ThumbDownOffAltOutlinedIcon from '@mui/icons-material/ThumbDownOffAltOutlined';
-import ReplyOutlinedIcon from '@mui/icons-material/ReplyOutlined';
-import AddTaskOutlinedIcon from '@mui/icons-material/AddTaskOutlined';
-import Comments from '../components/Comments';
-import Card from '../components/Card';
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
+import ThumbDownOffAltOutlinedIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
+import ReplyOutlinedIcon from "@mui/icons-material/ReplyOutlined";
+import AddTaskOutlinedIcon from "@mui/icons-material/AddTaskOutlined";
+import Comments from "../components/Comments";
+import Card from "../components/Card";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
 
 const Container = styled.div`
   display: flex;
@@ -105,6 +108,27 @@ const Subscribe = styled.button`
 `;
 
 const Video = () => {
+  const [video, setVideo] = useState({});
+  const [channel, setChannel] = useState({});
+  const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  const path = useLocation().pathname.split("/")[2];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await axios.get(`/videos/find/${path}`);
+        const { data: dataChannels } = await axios.get(
+          `/users/find/${data.video.userId}`
+        );
+        setVideo(data.video);
+        setChannel(dataChannels.user);
+      } catch (error) {}
+    };
+    fetchData();
+  }, [path]);
+
   return (
     <Container>
       <Content>
@@ -145,9 +169,10 @@ const Video = () => {
               <ChannelName>Lama Dev</ChannelName>
               <ChannelCounter>200K subscribers</ChannelCounter>
               <Description>
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloribus laborum delectus
-                unde quaerat dolore culpa sit aliquam at. Vitae facere ipsum totam ratione
-                exercitationem. Suscipit animi accusantium dolores ipsam ut.
+                Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+                Doloribus laborum delectus unde quaerat dolore culpa sit aliquam
+                at. Vitae facere ipsum totam ratione exercitationem. Suscipit
+                animi accusantium dolores ipsam ut.
               </Description>
             </ChannelDetail>
           </ChannelInfo>
@@ -156,21 +181,7 @@ const Video = () => {
         <Hr />
         <Comments />
       </Content>
-      <Recommendation>
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-        <Card type="sm" />
-      </Recommendation>
+      <Recommendation></Recommendation>
     </Container>
   );
 };

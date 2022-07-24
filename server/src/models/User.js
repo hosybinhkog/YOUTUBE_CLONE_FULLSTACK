@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
@@ -15,7 +15,6 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     img: {
       type: String,
@@ -27,8 +26,12 @@ const userSchema = new Schema(
     subscribedUsers: {
       type: [String],
     },
+    fromGoogle: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('users', userSchema);
+module.exports = mongoose.model("users", userSchema);
